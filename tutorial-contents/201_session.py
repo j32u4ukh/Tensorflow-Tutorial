@@ -5,7 +5,10 @@ My Youtube Channel: https://www.youtube.com/user/MorvanZhou
 Dependencies:
 tensorflow: 1.1.0
 """
+import os
 import tensorflow as tf
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 m1 = tf.constant([[2, 2]])
 m2 = tf.constant([[3],

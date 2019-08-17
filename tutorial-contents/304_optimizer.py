@@ -26,6 +26,7 @@ y = np.power(x, 2) + noise                          # shape (100, 1) + some nois
 plt.scatter(x, y)
 plt.show()
 
+
 # default network
 class Net:
     def __init__(self, opt, **kwargs):
@@ -35,6 +36,7 @@ class Net:
         out = tf.layers.dense(l, 1)
         self.loss = tf.losses.mean_squared_error(self.y, out)
         self.train = opt(LR, **kwargs).minimize(self.loss)
+
 
 # different nets
 net_SGD         = Net(tf.train.GradientDescentOptimizer)

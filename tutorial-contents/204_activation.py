@@ -21,7 +21,10 @@ y_softplus = tf.nn.softplus(x)
 # y_softmax = tf.nn.softmax(x)  softmax is a special kind of activation function, it is about probability
 
 sess = tf.Session()
-y_relu, y_sigmoid, y_tanh, y_softplus = sess.run([y_relu, y_sigmoid, y_tanh, y_softplus])
+y_relu, y_sigmoid, y_tanh, y_softplus = sess.run([y_relu,
+                                                  y_sigmoid,
+                                                  y_tanh,
+                                                  y_softplus])
 
 # plt to visualize these activation function
 plt.figure(1, figsize=(8, 6))

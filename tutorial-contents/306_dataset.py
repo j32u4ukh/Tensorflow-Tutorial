@@ -23,7 +23,12 @@ dataset = tf.data.Dataset.from_tensor_slices((tfx, tfy))
 dataset = dataset.shuffle(buffer_size=1000)   # choose data randomly from this buffer
 dataset = dataset.batch(32)                   # batch size you will use
 dataset = dataset.repeat(3)                   # repeat for 3 epochs
-iterator = dataset.make_initializable_iterator()  # later we have to initialize this one
+
+print("dataset output_shape:", tf.compat.v1.data.get_output_shapes(dataset))
+
+# later we have to initialize this one
+# iterator = dataset.make_initializable_iterator()
+iterator = tf.compat.v1.data.make_initializable_iterator(dataset)
 
 # your network
 bx, by = iterator.get_next()                  # use batch to update
@@ -34,14 +39,24 @@ train = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
 
 sess = tf.Session()
 # need to initialize the iterator in this case
-sess.run([iterator.initializer, tf.global_variables_initializer()], feed_dict={tfx: npx_train, tfy: npy_train})
+sess.run([iterator.initializer, tf.global_variables_initializer()],
+         feed_dict={tfx: npx_train, tfy: npy_train})
 
 for step in range(201):
   try:
-    _, trainl = sess.run([train, loss])                       # train
+    # train
+    _, trainl = sess.run([train, loss])
+    # print("tf_x:{}, tf_y:{}".format(tfx.shape, tfy.shape))
+
+    # test
     if step % 10 == 0:
-      testl = sess.run(loss, {bx: npx_test, by: npy_test})    # test
+      b_x, b_y, testl = sess.run([bx, by, loss],
+                                 {bx: npx_test,
+                                  by: npy_test})
+      print("bx:{}, by:{}".format(b_x.shape, b_y.shape))
       print('step: %i/200' % step, '|train loss:', trainl, '|test loss:', testl)
   except tf.errors.OutOfRangeError:     # if training takes more than 3 epochs, training will be stopped
     print('Finish the last epoch.')
     break
+
+sess.close()
