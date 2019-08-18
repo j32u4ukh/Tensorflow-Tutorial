@@ -36,17 +36,27 @@ def artist_works():     # painting from the famous artist (real target)
 
 
 with tf.variable_scope('Generator'):
-    G_in = tf.placeholder(tf.float32, [None, N_IDEAS])          # random ideas (could from normal distribution)
+    # random ideas (could from normal distribution)
+    G_in = tf.placeholder(tf.float32, [None, N_IDEAS])
     G_l1 = tf.layers.dense(G_in, 128, tf.nn.relu)
-    G_out = tf.layers.dense(G_l1, ART_COMPONENTS)               # making a painting from these random ideas
+
+    # making a painting from these random ideas
+    G_out = tf.layers.dense(G_l1, ART_COMPONENTS)
 
 with tf.variable_scope('Discriminator'):
-    real_art = tf.placeholder(tf.float32, [None, ART_COMPONENTS], name='real_in')   # receive art work from the famous artist
+    # receive art work from the famous artist
+    real_art = tf.placeholder(tf.float32, [None, ART_COMPONENTS], name='real_in')
     D_l0 = tf.layers.dense(real_art, 128, tf.nn.relu, name='l')
-    prob_artist0 = tf.layers.dense(D_l0, 1, tf.nn.sigmoid, name='out')              # probability that the art work is made by artist
+
+    # probability that the art work is made by artist
+    prob_artist0 = tf.layers.dense(D_l0, 1, tf.nn.sigmoid, name='out')
+
     # reuse layers for generator
-    D_l1 = tf.layers.dense(G_out, 128, tf.nn.relu, name='l', reuse=True)            # receive art work from a newbie like G
-    prob_artist1 = tf.layers.dense(D_l1, 1, tf.nn.sigmoid, name='out', reuse=True)  # probability that the art work is made by artist
+    # receive art work from a newbie like G
+    D_l1 = tf.layers.dense(G_out, 128, tf.nn.relu, name='l', reuse=True)
+
+    # probability that the art work is made by artist
+    prob_artist1 = tf.layers.dense(D_l1, 1, tf.nn.sigmoid, name='out', reuse=True)
 
 D_loss = -tf.reduce_mean(tf.log(prob_artist0) + tf.log(1-prob_artist1))
 G_loss = tf.reduce_mean(tf.log(1-prob_artist1))
@@ -73,7 +83,12 @@ for step in range(5000):
         plt.plot(PAINT_POINTS[0], 1 * np.power(PAINT_POINTS[0], 2) + 0, c='#FF9359', lw=3, label='lower bound')
         plt.text(-.5, 2.3, 'D accuracy=%.2f (0.5 for D to converge)' % pa0.mean(), fontdict={'size': 15})
         plt.text(-.5, 2, 'D score= %.2f (-1.38 for G to converge)' % -Dl, fontdict={'size': 15})
-        plt.ylim((0, 3)); plt.legend(loc='upper right', fontsize=12); plt.draw(); plt.pause(0.01)
+        plt.ylim((0, 3))
+        plt.legend(loc='upper right', fontsize=12)
+        plt.draw()
+        plt.pause(0.01)
 
 plt.ioff()
 plt.show()
+
+sess.close()

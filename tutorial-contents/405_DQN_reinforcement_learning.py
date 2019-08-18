@@ -37,18 +37,33 @@ tf_a = tf.placeholder(tf.int32, [None, ])
 tf_r = tf.placeholder(tf.float32, [None, ])
 tf_s_ = tf.placeholder(tf.float32, [None, N_STATES])
 
-with tf.variable_scope('q'):        # evaluation network
-    l_eval = tf.layers.dense(tf_s, 10, tf.nn.relu, kernel_initializer=tf.random_normal_initializer(0, 0.1))
-    q = tf.layers.dense(l_eval, N_ACTIONS, kernel_initializer=tf.random_normal_initializer(0, 0.1))
+# evaluation network
+with tf.variable_scope('q'):
+    l_eval = tf.layers.dense(tf_s,
+                             10,
+                             tf.nn.relu,
+                             kernel_initializer=tf.random_normal_initializer(0, 0.1))
+    q = tf.layers.dense(l_eval,
+                        N_ACTIONS,
+                        kernel_initializer=tf.random_normal_initializer(0, 0.1))
 
-with tf.variable_scope('q_next'):   # target network, not to train
-    l_target = tf.layers.dense(tf_s_, 10, tf.nn.relu, trainable=False)
-    q_next = tf.layers.dense(l_target, N_ACTIONS, trainable=False)
+# target network, not to train
+with tf.variable_scope('q_next'):
+    l_target = tf.layers.dense(tf_s_,
+                               10,
+                               tf.nn.relu,
+                               trainable=False)
+    q_next = tf.layers.dense(l_target,
+                             N_ACTIONS,
+                             trainable=False)
 
-q_target = tf_r + GAMMA * tf.reduce_max(q_next, axis=1)                   # shape=(None, ),
+# shape=(None, ),
+q_target = tf_r + GAMMA * tf.reduce_max(q_next, axis=1)
 
 a_indices = tf.stack([tf.range(tf.shape(tf_a)[0], dtype=tf.int32), tf_a], axis=1)
-q_wrt_a = tf.gather_nd(params=q, indices=a_indices)     # shape=(None, ), q for current state
+
+# shape=(None, ), q for current state
+q_wrt_a = tf.gather_nd(params=q, indices=a_indices)
 
 loss = tf.reduce_mean(tf.squared_difference(q_target, q_wrt_a))
 train_op = tf.train.AdamOptimizer(LR).minimize(loss)
@@ -95,6 +110,7 @@ def learn():
     b_s_ = b_memory[:, -N_STATES:]
     sess.run(train_op, {tf_s: b_s, tf_a: b_a, tf_r: b_r, tf_s_: b_s_})
 
+
 print('\nCollecting experience...')
 for i_episode in range(400):
     s = env.reset()
@@ -124,3 +140,5 @@ for i_episode in range(400):
         if done:
             break
         s = s_
+
+sess.close()

@@ -41,7 +41,8 @@ def save():
     saver.save(sess, './params', write_meta_graph=False)  # meta_graph is not recommended
 
     # plotting
-    pred, l = sess.run([o, loss], {tf_x: x, tf_y: y})
+    pred, l = sess.run([o, loss],
+                       {tf_x: x, tf_y: y})
     plt.figure(1, figsize=(10, 5))
     plt.subplot(121)
     plt.scatter(x, y)

@@ -9,7 +9,8 @@ tensorflow: 1.4.0
 import tensorflow as tf
 import multiprocessing as mp
 import numpy as np
-import os, shutil
+import os
+import shutil
 
 
 TRAINING = True
@@ -24,7 +25,7 @@ def work(job_name, task_index, step, lock):
     # set work's ip:port, parameter server and worker are the same steps
     cluster = tf.train.ClusterSpec({
         "ps": ['localhost:2221', ],
-        "worker": ['localhost:2222', 'localhost:2223', 'localhost:2224',]
+        "worker": ['localhost:2222', 'localhost:2223', 'localhost:2224', ]
     })
     server = tf.train.Server(cluster, job_name=job_name, task_index=task_index)
 
@@ -79,7 +80,7 @@ def parallel_train():
     [p.join() for p in ps]
 
 
-def eval():
+def eval_():
     tf_x = tf.placeholder(tf.float32, [None, 1])
     l1 = tf.layers.dense(tf_x, 10, tf.nn.relu)
     output = tf.layers.dense(l1, 1)
@@ -98,4 +99,4 @@ if __name__ == "__main__":
     if TRAINING:
         parallel_train()
     else:
-        eval()
+        eval_()

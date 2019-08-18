@@ -70,11 +70,15 @@ class NN(object):
         x = tf.layers.dense(x, out_size, kernel_initializer=self.w_init, bias_initializer=B_INIT)
         self.pre_activation.append(x)
         # the momentum plays important rule. the default 0.99 is too high in this case!
-        if self.is_bn: x = tf.layers.batch_normalization(x, momentum=0.4, training=tf_is_train)    # when have BN
+        # when have BN
+        if self.is_bn:
+            x = tf.layers.batch_normalization(x, momentum=0.4, training=tf_is_train)
         out = x if ac is None else ac(x)
         return out
 
-nets = [NN(batch_normalization=False), NN(batch_normalization=True)]    # two nets, with and without BN
+
+# two nets, with and without BN
+nets = [NN(batch_normalization=False), NN(batch_normalization=True)]
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
@@ -83,29 +87,44 @@ sess.run(tf.global_variables_initializer())
 f, axs = plt.subplots(4, N_HIDDEN+1, figsize=(10, 5))
 plt.ion()   # something about plotting
 
+
 def plot_histogram(l_in, l_in_bn, pre_ac, pre_ac_bn):
-    for i, (ax_pa, ax_pa_bn, ax,  ax_bn) in enumerate(zip(axs[0, :], axs[1, :], axs[2, :], axs[3, :])):
+    for i, (ax_pa, ax_pa_bn, ax, ax_bn) in enumerate(zip(axs[0, :], axs[1, :], axs[2, :], axs[3, :])):
         [a.clear() for a in [ax_pa, ax_pa_bn, ax, ax_bn]]
-        if i == 0: p_range = (-7, 10); the_range = (-7, 10)
-        else: p_range = (-4, 4); the_range = (-1, 1)
+
+        if i == 0:
+            p_range = (-7, 10)
+            the_range = (-7, 10)
+        else:
+            p_range = (-4, 4)
+            the_range = (-1, 1)
+
         ax_pa.set_title('L' + str(i))
         ax_pa.hist(pre_ac[i].ravel(), bins=10, range=p_range, color='#FF9359', alpha=0.5)
         ax_pa_bn.hist(pre_ac_bn[i].ravel(), bins=10, range=p_range, color='#74BCFF', alpha=0.5)
         ax.hist(l_in[i].ravel(), bins=10, range=the_range, color='#FF9359')
         ax_bn.hist(l_in_bn[i].ravel(), bins=10, range=the_range, color='#74BCFF')
         for a in [ax_pa, ax, ax_pa_bn, ax_bn]:
-            a.set_yticks(()); a.set_xticks(())
-        ax_pa_bn.set_xticks(p_range); ax_bn.set_xticks(the_range); axs[2, 0].set_ylabel('Act'); axs[3, 0].set_ylabel('BN Act')
+            a.set_yticks(())
+            a.set_xticks(())
+
+        ax_pa_bn.set_xticks(p_range)
+        ax_bn.set_xticks(the_range)
+        axs[2, 0].set_ylabel('Act')
+        axs[3, 0].set_ylabel('BN Act')
     plt.pause(0.01)
 
-losses = [[], []]   # record test loss
+
+# record test loss
+losses = [[], []]
 for epoch in range(EPOCH):
     print('Epoch: ', epoch)
     np.random.shuffle(train_data)
     step = 0
     in_epoch = True
     while in_epoch:
-        b_s, b_f = (step*BATCH_SIZE) % len(train_data), ((step+1)*BATCH_SIZE) % len(train_data) # batch index
+        # batch index
+        b_s, b_f = (step*BATCH_SIZE) % len(train_data), ((step+1)*BATCH_SIZE) % len(train_data)
         step += 1
         if b_f < b_s:
             b_f = len(train_data)
@@ -127,7 +146,9 @@ plt.ioff()
 plt.figure(2)
 plt.plot(losses[0], c='#FF9359', lw=3, label='Original')
 plt.plot(losses[1], c='#74BCFF', lw=3, label='Batch Normalization')
-plt.ylabel('test loss'); plt.ylim((0, 2000)); plt.legend(loc='best')
+plt.ylabel('test loss')
+plt.ylim((0, 2000))
+plt.legend(loc='best')
 
 # plot prediction line
 pred, pred_bn = sess.run([nets[0].out, nets[1].out], {tf_x: test_x, tf_is_train: False})
@@ -135,4 +156,7 @@ plt.figure(3)
 plt.plot(test_x, pred, c='#FF9359', lw=4, label='Original')
 plt.plot(test_x, pred_bn, c='#74BCFF', lw=4, label='Batch Normalization')
 plt.scatter(x[:200], y[:200], c='r', s=50, alpha=0.2, label='train')
-plt.legend(loc='best'); plt.show()
+plt.legend(loc='best')
+plt.show()
+
+sess.close()

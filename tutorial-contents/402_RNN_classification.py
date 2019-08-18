@@ -22,7 +22,7 @@ INPUT_SIZE = 28         # rnn input size / image width
 LR = 0.01               # learning rate
 
 # data
-mnist = input_data.read_data_sets('./mnist', one_hot=True)              # they has been normalized to range (0,1)
+mnist = input_data.read_data_sets('./mnist', one_hot=True)   # they has been normalized to range (0,1)
 test_x = mnist.test.images[:2000]
 test_y = mnist.test.labels[:2000]
 
@@ -47,17 +47,27 @@ outputs, (h_c, h_n) = tf.nn.dynamic_rnn(
     dtype=tf.float32,           # must given if set initial_state = None
     time_major=False,           # False: (batch, time step, input); True: (time step, batch, input)
 )
-output = tf.layers.dense(outputs[:, -1, :], 10)              # output based on the last output step
 
-loss = tf.losses.softmax_cross_entropy(onehot_labels=tf_y, logits=output)           # compute cost
+# output based on the last output step
+output = tf.layers.dense(outputs[:, -1, :], 10)
+
+# compute cost
+loss = tf.losses.softmax_cross_entropy(onehot_labels=tf_y,
+                                       logits=output)
 train_op = tf.train.AdamOptimizer(LR).minimize(loss)
 
-accuracy = tf.metrics.accuracy(          # return (acc, update_op), and create 2 local variables
-    labels=tf.argmax(tf_y, axis=1), predictions=tf.argmax(output, axis=1),)[1]
+# return (acc, update_op), and create 2 local variables
+accuracy = tf.metrics.accuracy(labels=tf.argmax(tf_y, axis=1),
+                               predictions=tf.argmax(output, axis=1),)[1]
 
 sess = tf.Session()
-init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer()) # the local var is for accuracy_op
-sess.run(init_op)     # initialize var in graph
+
+# the local var is for accuracy_op
+init_op = tf.group(tf.global_variables_initializer(),
+                   tf.local_variables_initializer())
+
+# initialize var in graph
+sess.run(init_op)
 
 for step in range(1200):    # training
     b_x, b_y = mnist.train.next_batch(BATCH_SIZE)
@@ -71,3 +81,4 @@ test_output = sess.run(output, {tf_x: test_x[:10]})
 pred_y = np.argmax(test_output, 1)
 print(pred_y, 'prediction number')
 print(np.argmax(test_y[:10], 1), 'real number')
+sess.close()

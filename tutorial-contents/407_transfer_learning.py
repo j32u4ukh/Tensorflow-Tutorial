@@ -31,7 +31,8 @@ def download():     # download tiger and kittycat image
             n_urls = len(urls)
             for i, url in enumerate(urls):
                 try:
-                    urlretrieve(url.strip(), './for_transfer_learning/data/%s/%s' % (category, url.strip().split('/')[-1]))
+                    urlretrieve(url.strip(),
+                                './for_transfer_learning/data/%s/%s' % (category, url.strip().split('/')[-1]))
                     print('%s %i/%i' % (category, i, n_urls))
                 except:
                     print('%s %i/%i' % (category, i, n_urls), 'no image')
@@ -54,12 +55,12 @@ def load_img(path):
 def load_data():
     imgs = {'tiger': [], 'kittycat': []}
     for k in imgs.keys():
-        dir = './for_transfer_learning/data/' + k
-        for file in os.listdir(dir):
+        _dir = './for_transfer_learning/data/' + k
+        for file in os.listdir(_dir):
             if not file.lower().endswith('.jpg'):
                 continue
             try:
-                resized_img = load_img(os.path.join(dir, file))
+                resized_img = load_img(os.path.join(_dir, file))
             except OSError:
                 continue
             imgs[k].append(resized_img)    # [1, height, width, depth] * n
@@ -79,7 +80,10 @@ class Vgg16:
         try:
             self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
         except FileNotFoundError:
-            print('Please download VGG16 parameters from here https://mega.nz/#!YU1FWJrA!O1ywiCS2IiOlUCtCpI6HTJOMrneN-Qdv3ywQP5poecM\nOr from my Baidu Cloud: https://pan.baidu.com/s/1Spps1Wy0bvrQHH2IMkRfpg')
+            vgg16_meta = "https://mega.nz/#!YU1FWJrA!O1ywiCS2IiOlUCtCpI6HTJOMrneN-Qdv3ywQP5poecM"
+            vgg16_Baidu = "https://pan.baidu.com/s/1Spps1Wy0bvrQHH2IMkRfpg"
+            print('Please download VGG16 parameters from here: {}'.format(vgg16_meta))
+            print("Or from my Baidu Cloud: {}".format(vgg16_Baidu))
 
         self.tfx = tf.placeholder(tf.float32, [None, 224, 224, 3])
         self.tfy = tf.placeholder(tf.float32, [None, 1])
@@ -131,7 +135,8 @@ class Vgg16:
             self.train_op = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
             self.sess.run(tf.global_variables_initializer())
 
-    def max_pool(self, bottom, name):
+    @staticmethod
+    def max_pool(bottom, name):
         return tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
 
     def conv_layer(self, bottom, name):
@@ -182,7 +187,7 @@ def train():
     vgg.save('./for_transfer_learning/model/transfer_learn')      # save learned fc layers
 
 
-def eval():
+def eval_():
     vgg = Vgg16(vgg16_npy_path='./for_transfer_learning/vgg16.npy',
                 restore_from='./for_transfer_learning/model/transfer_learn')
     vgg.predict(
@@ -192,4 +197,4 @@ def eval():
 if __name__ == '__main__':
     # download()
     # train()
-    eval()
+    eval_()
